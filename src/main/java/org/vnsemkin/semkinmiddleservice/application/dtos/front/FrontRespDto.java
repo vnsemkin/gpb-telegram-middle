@@ -1,4 +1,4 @@
 package org.vnsemkin.semkinmiddleservice.application.dtos.front;
 
-public record CustomerRespDto(String name, String email){
+public record FrontRespDto(String name, String email){
 }

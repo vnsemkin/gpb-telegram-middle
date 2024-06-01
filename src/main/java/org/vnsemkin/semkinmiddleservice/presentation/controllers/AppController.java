@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerReqDto;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRespDto;
-import org.vnsemkin.semkinmiddleservice.application.dtos.ResultDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontRespDto;
 import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
@@ -24,20 +24,20 @@ public class AppController {
     private final CustomerMapper mapper = CustomerMapper.INSTANCE;
 
     @PostMapping("registration")
-    public ResponseEntity<ResultDto<CustomerRespDto>> registration(
+    public ResponseEntity<?> registration(
         @Validated
-        @RequestBody CustomerReqDto customerReqDto) {
-        Result<Customer> result = customerRegistrationService.register(customerReqDto);
-        return result.isSuccess() ? resultSuccess(result) : resultFails(result);
+        @RequestBody FrontReqDto frontReqDto) {
+        Result<Customer, String> result = customerRegistrationService.register(frontReqDto);
+        return result.isSuccess() ? resultSuccess(result) : resultFail(result);
     }
 
-    private ResponseEntity<ResultDto<CustomerRespDto>> resultSuccess(Result<Customer> result) {
+    private ResponseEntity<FrontRespDto> resultSuccess(@NonNull Result<Customer, String> result) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ResultDto.success(mapper.toDto(result.getData().get())));
+            .body(mapper.toDto(result.getData().get()));
     }
 
-    private ResponseEntity<ResultDto<CustomerRespDto>> resultFails(Result<Customer> result) {
+    private ResponseEntity<String> resultFail(Result<Customer, String> result) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ResultDto.failure(result.getError().get().getMessage()));
+            .body(result.getError().get());
     }
 }

@@ -4,13 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.vnsemkin.semkinmiddleservice.application.dtos.ResultDto;
 
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 
     @ExceptionHandler(CustomerDtoValidationException.class)
-    public ResponseEntity<ResultDto<Void>> handleValidationExceptions(CustomerDtoValidationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResultDto.failure(ex.getMessage()));
+    public ResponseEntity<String> handleValidationExceptions(CustomerDtoValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
