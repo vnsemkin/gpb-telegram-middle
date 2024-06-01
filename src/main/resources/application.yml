@@ -1,5 +1,8 @@
 # Spring
 spring.application.name: semkin-middle-service
+server.port: 8081
+backend.base-url: "http://localhost:8080"
+
 
 # FlyWay
 spring.flyway.url: jdbc:postgresql://localhost:5432/gpb-postgres

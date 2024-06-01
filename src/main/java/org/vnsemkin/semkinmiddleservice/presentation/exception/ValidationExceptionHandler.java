@@ -9,8 +9,8 @@ import org.vnsemkin.semkinmiddleservice.application.dtos.ResultDto;
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 
-    @ExceptionHandler(CustomerValidationException.class)
-    public ResponseEntity<ResultDto<Void>> handleValidationExceptions(CustomerValidationException ex) {
+    @ExceptionHandler(CustomerDtoValidationException.class)
+    public ResponseEntity<ResultDto<Void>> handleValidationExceptions(CustomerDtoValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResultDto.failure(ex.getMessage()));
     }
 }
