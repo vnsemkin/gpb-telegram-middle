@@ -1,0 +1,11 @@
+# Spring
+spring.profiles.active: test
+backend.base-url: "http://localhost:8080"
+
+# Datasource
+spring.datasource.url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driverClassName: org.h2.Driver
+spring.datasource.username: sa
+spring.datasource.password: password
+spring.jpa.hibernate.ddl-auto: create-drop
+

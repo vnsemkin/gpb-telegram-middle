@@ -3,8 +3,7 @@ package org.vnsemkin.semkinmiddleservice.domain.models;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Optional;
 
 @Getter
 public final class Result<T> {
@@ -32,23 +31,11 @@ public final class Result<T> {
         return error != null;
     }
 
-    public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
-        if (isSuccess()) {
-            return Result.success(mapper.apply(data));
-        } else {
-            return Result.failure(error);
-        }
+    public Optional<T> getData() {
+        return isSuccess() ? Optional.of(data) : Optional.empty();
     }
 
-    public void ifSuccess(Consumer<? super T> consumer) {
-        if (isSuccess()) {
-            consumer.accept(data);
-        }
-    }
-
-    public void ifFailure(Consumer<? super Throwable> consumer) {
-        if (isFailure()) {
-            consumer.accept(error);
-        }
+    public Optional<Throwable> getError() {
+        return isFailure() ? Optional.of(error) : Optional.empty();
     }
 }
