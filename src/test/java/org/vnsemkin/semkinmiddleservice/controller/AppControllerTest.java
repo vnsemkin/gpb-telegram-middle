@@ -9,8 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerReqDto;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRespDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontRespDto;
 import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
@@ -47,31 +47,31 @@ public class AppControllerTest {
 
     @Test
     void whenRegistrationIsSuccessful_thenReturns201() throws Exception {
-        CustomerReqDto customerReqDto = new CustomerReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
         Customer customer = new Customer(LOCAL_ID, NAME, EMAIL, PASSWORD, UUID);
-        CustomerRespDto customerRespDto = new CustomerRespDto(NAME, EMAIL);
+        FrontRespDto frontRespDto = new FrontRespDto(NAME, EMAIL);
 
-        when(customerRegistrationService.register(any(CustomerReqDto.class)))
+        when(customerRegistrationService.register(any(FrontReqDto.class)))
             .thenReturn(Result.success(customer));
         when(mapper.toDto(any(Customer.class)))
-            .thenReturn(customerRespDto);
+            .thenReturn(frontRespDto);
 
         mockMvc.perform(post(REG_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(customerReqDto)))
+                .content(objectMapper.writeValueAsString(frontReqDto)))
             .andExpect(status().isCreated());
     }
 
     @Test
     void whenRegistrationFails_thenReturns400() throws Exception {
-        CustomerReqDto customerReqDto = new CustomerReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
 
-        when(customerRegistrationService.register(any(CustomerReqDto.class)))
-            .thenReturn(Result.failure(new RuntimeException(REG_FAULT)));
+        when(customerRegistrationService.register(any(FrontReqDto.class)))
+            .thenReturn(Result.error(REG_FAULT));
 
         mockMvc.perform(post(REG_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(customerReqDto)))
+                .content(objectMapper.writeValueAsString(frontReqDto)))
             .andExpect(status().isBadRequest());
     }
 }

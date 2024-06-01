@@ -2,8 +2,8 @@ package org.vnsemkin.semkinmiddleservice.mappers;
 
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerReqDto;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRespDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontRespDto;
 import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
@@ -11,97 +11,91 @@ import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CustomerMapperTest {
+    private final static String NAME = "John";
+    private final static long LOCAL_ID = 123456789L;
+    private final static String EMAIL = "john@example.com";
+    private final static String PASSWORD = "password";
+    private final static String UUID = "123e4567-e89b-12d3-a456-426614174000";
 
     private final CustomerMapper mapper = Mappers.getMapper(CustomerMapper.class);
 
     @Test
     public void testToDto_FromCustomer() {
-        // Arrange
-        long id = 19842141241L;
-        String name = "John";
-        String email = "john.doe@example.com";
-        String password = "password";
-        String uuid = "5f59e024-03c7-498d-9fc9-b8b15fd49c47";
-        Customer customer = new Customer(id, name, email, password, uuid);
+        // ARRANGE
+        Customer customer = new Customer(LOCAL_ID, NAME, EMAIL, PASSWORD, UUID);
+        
+        // ACT
+        FrontRespDto dto = mapper.toDto(customer);
 
-
-        // Act
-        CustomerRespDto dto = mapper.toDto(customer);
-
-        // Assert
+        // ASSERT
         assertThat(dto).isNotNull();
-        assertThat(dto.name()).isEqualTo("John");
-        assertThat(dto.email()).isEqualTo("john.doe@example.com");
+        assertThat(dto.name()).isEqualTo(NAME);
+        assertThat(dto.email()).isEqualTo(EMAIL);
     }
 
     @Test
     public void testToDto_FromCustomerEntity() {
-        // Arrange
+        // ARRANGE
         CustomerEntity customerEntity = new CustomerEntity();
-        customerEntity.setName("John");
-        customerEntity.setEmail("john.doe@example.com");
+        customerEntity.setName(NAME);
+        customerEntity.setEmail(EMAIL);
 
-        // Act
-        CustomerRespDto dto = mapper.toDto(customerEntity);
+        // ACT
+        FrontRespDto dto = mapper.toDto(customerEntity);
 
-        // Assert
+        // ASSERT
         assertThat(dto).isNotNull();
-        assertThat(dto.name()).isEqualTo("John");
-        assertThat(dto.email()).isEqualTo("john.doe@example.com");
+        assertThat(dto.name()).isEqualTo(NAME);
+        assertThat(dto.email()).isEqualTo(EMAIL);
     }
 
     @Test
     public void testToEntity_FromCustomer() {
-        // Arrange
-        long id = 19842141241L;
-        String name = "John";
-        String email = "john.doe@example.com";
-        String password = "password";
-        String uuid = "5f59e024-03c7-498d-9fc9-b8b15fd49c47";
-        Customer customer = new Customer(id, name, email, password, uuid);
+        // ARRANGE
+        Customer customer = new Customer(LOCAL_ID, NAME, EMAIL, PASSWORD, UUID);
 
-        // Act
+        // ACT
         CustomerEntity entity = mapper.toEntity(customer);
 
-        // Assert
+        // ASSERT
         assertThat(entity).isNotNull();
-        assertThat(entity.getName()).isEqualTo("John");
-        assertThat(entity.getEmail()).isEqualTo("john.doe@example.com");
-        assertThat(entity.getPassword()).isEqualTo("password");
-        assertThat(entity.getUuid()).isEqualTo("5f59e024-03c7-498d-9fc9-b8b15fd49c47");
+        assertThat(entity.getName()).isEqualTo(NAME);
+        assertThat(entity.getEmail()).isEqualTo(EMAIL);
+        assertThat(entity.getPassword()).isEqualTo(PASSWORD);
+        assertThat(entity.getUuid()).isEqualTo(UUID);
     }
 
     @Test
     public void testToEntity_FromCustomerReqDto() {
-        // Arrange
-        CustomerReqDto dto = new CustomerReqDto("John",
-            "john.doe@example.com",
-            "password");
+        // ARRANGE
+        FrontReqDto dto = new FrontReqDto(NAME,
+            EMAIL,
+            PASSWORD);
 
-        // Act
+        // ACT
         CustomerEntity entity = mapper.toEntity(dto);
 
-        // Assert
+        // ASSERT
         assertThat(entity).isNotNull();
-        assertThat(entity.getName()).isEqualTo("John");
-        assertThat(entity.getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(entity.getName()).isEqualTo(NAME);
+        assertThat(entity.getEmail()).isEqualTo(EMAIL);
     }
 
     @Test
     public void testToCustomer_FromCustomerEntity() {
-        // Arrange
+        // ARRANGE
         CustomerEntity entity = new CustomerEntity();
-        entity.setName("John");
-        entity.setEmail("john.doe@example.com");
-        entity.setPassword("password");
-        entity.setUuid("5f59e024-03c7-498d-9fc9-b8b15fd49c47");
+        entity.setName(NAME);
+        entity.setEmail(EMAIL);
+        entity.setPassword(PASSWORD);
+        entity.setUuid(UUID);
 
-        // Act
+        // ACT
         Customer customer = mapper.toCustomer(entity);
 
-        // Assert
+        // ASSERT
         assertThat(customer).isNotNull();
-        assertThat(customer.name()).isEqualTo("John");
-        assertThat(customer.email()).isEqualTo("john.doe@example.com");
+        assertThat(customer.name()).isEqualTo(NAME);
+        assertThat(customer.email()).isEqualTo(EMAIL);
     }
 }

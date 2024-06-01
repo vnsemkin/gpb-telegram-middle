@@ -1,13 +1,13 @@
 package org.vnsemkin.semkinmiddleservice.models;
 
 import org.junit.jupiter.api.Test;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerReqDto;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
 import org.vnsemkin.semkinmiddleservice.presentation.exception.CustomerDtoValidationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class CustomerReqDtoTest {
+public class FrontReqDtoTest {
     private final static String VALID_NAME = "John";
     private final static String INVALID_NAME = "Invalid123";
     private final static String VALID_EMAIL = "john@example.com";
@@ -19,11 +19,11 @@ public class CustomerReqDtoTest {
     public void whenValidNameEmailAndPassword_thenCreateCustomerReqDto() {
         // ARRANGE
         // ACT
-        CustomerReqDto customerReqDto = new CustomerReqDto(VALID_NAME, VALID_EMAIL, VALID_PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(VALID_NAME, VALID_EMAIL, VALID_PASSWORD);
         // ASSERT
-        assertEquals(VALID_NAME, customerReqDto.name());
-        assertEquals(VALID_EMAIL, customerReqDto.email());
-        assertEquals(VALID_PASSWORD, customerReqDto.password());
+        assertEquals(VALID_NAME, frontReqDto.name());
+        assertEquals(VALID_EMAIL, frontReqDto.email());
+        assertEquals(VALID_PASSWORD, frontReqDto.password());
     }
 
     @Test
@@ -32,7 +32,7 @@ public class CustomerReqDtoTest {
         // ACT
         CustomerDtoValidationException exception = assertThrows(
             CustomerDtoValidationException.class,
-            () -> new CustomerReqDto(INVALID_NAME, VALID_EMAIL, VALID_PASSWORD)
+            () -> new FrontReqDto(INVALID_NAME, VALID_EMAIL, VALID_PASSWORD)
         );
         // ASSERT
         assertEquals("Invalid name format or length", exception.getMessage());
@@ -44,7 +44,7 @@ public class CustomerReqDtoTest {
         // ACT
         CustomerDtoValidationException exception = assertThrows(
             CustomerDtoValidationException.class,
-            () -> new CustomerReqDto(VALID_NAME, INVALID_EMAIL, VALID_PASSWORD)
+            () -> new FrontReqDto(VALID_NAME, INVALID_EMAIL, VALID_PASSWORD)
         );
         // ASSERT
         assertEquals("Invalid email format or length", exception.getMessage());
@@ -56,7 +56,7 @@ public class CustomerReqDtoTest {
         // ACT
         CustomerDtoValidationException exception = assertThrows(
             CustomerDtoValidationException.class,
-            () -> new CustomerReqDto(VALID_NAME, VALID_EMAIL, INVALID_PASSWORD)
+            () -> new FrontReqDto(VALID_NAME, VALID_EMAIL, INVALID_PASSWORD)
         );
         // ASSERT
         assertEquals("Invalid password length", exception.getMessage());

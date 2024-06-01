@@ -2,11 +2,11 @@ package org.vnsemkin.semkinmiddleservice.application.dtos.front;
 
 import org.vnsemkin.semkinmiddleservice.presentation.exception.CustomerDtoValidationException;
 
-public record CustomerReqDto(String name, String email, String password) {
+public record FrontReqDto(String name, String email, String password) {
     private static final String NAME_REGEX = "^[a-zA-Zа-яА-Я]+$";
     private static final String EMAIL_REGEX = "[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+";
 
-    public CustomerReqDto {
+    public FrontReqDto {
         if (!isValidName(name)) {
             throw new CustomerDtoValidationException("Invalid name format or length");
         }
