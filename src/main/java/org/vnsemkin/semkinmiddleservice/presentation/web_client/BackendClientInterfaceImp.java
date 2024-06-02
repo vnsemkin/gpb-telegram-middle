@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendErrorResponse;
+import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRegistrationReq;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRespUuid;
 import org.vnsemkin.semkinmiddleservice.application.external.BackendClientInterface;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
@@ -17,7 +18,7 @@ public class BackendClientInterfaceImp implements BackendClientInterface {
     private final static String INVALID_UUID = "Invalid UUID format";
     private final static String REG_ENDPOINT = "/users";
     private final static String USER_CREATED = "User created.";
-    private final static String GET_USER_UUID = "/user/%d";
+    private final static String GET_USER_UUID = "/users/%d";
     private final WebClient webClient;
 
     public BackendClientInterfaceImp(WebClient.Builder webClientBuilder,
@@ -25,11 +26,11 @@ public class BackendClientInterfaceImp implements BackendClientInterface {
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
-    public Result<String, BackendErrorResponse> registerCustomerOnBackend(long customerId) {
+    public Result<String, BackendErrorResponse> registerCustomerOnBackend(BackendRegistrationReq req) {
         return webClient
             .post()
             .uri(REG_ENDPOINT)
-            .body(BodyInserters.fromValue(customerId))
+            .body(BodyInserters.fromValue(req))
             .exchangeToMono(response -> {
                 if (response.statusCode().is2xxSuccessful()) {
                     Result<String, BackendErrorResponse> userCreated = Result.success(USER_CREATED);
@@ -40,18 +41,20 @@ public class BackendClientInterfaceImp implements BackendClientInterface {
                 }
             })
             .onErrorResume(throwable -> {
+                BackendErrorResponse backendErrorResponse = new BackendErrorResponse(throwable.getMessage(),
+                    EMPTY_STRING, EMPTY_STRING, EMPTY_STRING);
                 Result<String, BackendErrorResponse> errorResult =
-                    Result.error(new BackendErrorResponse(throwable.getMessage(),
-                        EMPTY_STRING, EMPTY_STRING, EMPTY_STRING));
+                    Result.error(backendErrorResponse);
+                System.out.println(errorResult);
                 return Mono.just(errorResult);
             })
             .block();
     }
 
-    public Result<BackendRespUuid, BackendErrorResponse> getCustomerUuid(long id) {
+    public Result<BackendRespUuid, BackendErrorResponse> getCustomerUuid(BackendRegistrationReq req) {
         return webClient
             .get()
-            .uri(String.format(GET_USER_UUID, id))
+            .uri(String.format(GET_USER_UUID, req.id()))
             .exchangeToMono(response -> {
                 if (response.statusCode().is2xxSuccessful()) {
                     return response.bodyToMono(BackendRespUuid.class)
@@ -59,7 +62,7 @@ public class BackendClientInterfaceImp implements BackendClientInterface {
                         .onErrorResume(UuidValidationException.class, e ->
                             Mono.just(Result.error(
                                 new BackendErrorResponse(INVALID_UUID,
-                                    null, null, null))
+                                    EMPTY_STRING, EMPTY_STRING, EMPTY_STRING))
                             )
                         );
                 } else {
@@ -70,7 +73,7 @@ public class BackendClientInterfaceImp implements BackendClientInterface {
             .onErrorResume(throwable ->
                 Mono.just(Result.error(
                     new BackendErrorResponse(throwable.getMessage(),
-                        null, null, null))
+                        EMPTY_STRING, EMPTY_STRING, EMPTY_STRING))
                 )
             )
             .block();

@@ -17,6 +17,7 @@ public interface CustomerMapper {
     CustomerEntity toEntity(Customer customer);
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "uuid", ignore = true)
-    CustomerEntity toEntity(FrontReqDto frontReqDto);
+    @Mapping(target = "passwordHash", source = "passwordHash")
+    CustomerEntity toEntity(FrontReqDto frontReqDto, String passwordHash);
     Customer toCustomer(CustomerEntity customer);
 }

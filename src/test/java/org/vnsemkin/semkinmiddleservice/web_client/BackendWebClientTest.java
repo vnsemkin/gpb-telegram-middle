@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.vnsemkin.semkinmiddleservice.SemkinMiddleServiceApplicationTests;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendErrorResponse;
+import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRegistrationReq;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRespUuid;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
 import org.vnsemkin.semkinmiddleservice.models.ErrorModel;
@@ -35,8 +36,10 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
     private final static String VALID_UUID = "5f59e024-03c7-498d-9fc9-b8b15fd49c47";
     private final static String USER_CREATED = "User created.";
     private final static String TEST = "Test";
-    private final static long LOCAL_ID = 1L;
+    private final static String DELIMITER = "/";
     private final static String ID_AS_STRING = "123";
+    private final static String USERS_ENDPOINT = "/users";
+    BackendRegistrationReq req = new BackendRegistrationReq(Long.parseLong(ID_AS_STRING));
     @Autowired
     BackendClientInterfaceImp backendWebClient;
     @Autowired
@@ -65,9 +68,9 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
                 .withStatus(HttpStatus.NO_CONTENT.value())));
         // ACT
         Result<String, BackendErrorResponse> resultBackendDto = backendWebClient
-            .registerCustomerOnBackend(LOCAL_ID);
+            .registerCustomerOnBackend(req);
         //ASSERT
-        verify(postRequestedFor(urlEqualTo("/users")));
+        verify(postRequestedFor(urlEqualTo(USERS_ENDPOINT)));
         assertNotNull(resultBackendDto);
         assertTrue(resultBackendDto.isSuccess());
         assertTrue(resultBackendDto.getData().isPresent());
@@ -79,15 +82,15 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
         // ARRANGE
         ErrorModel errorModel = new ErrorModel(TEST, TEST, TEST, TEST);
         String modelErrorAsJson = objectMapper.writeValueAsString(errorModel);
-        stubFor(post(urlEqualTo("/users"))
+        stubFor(post(urlEqualTo(USERS_ENDPOINT))
             .willReturn(aResponse()
                 .withStatus(HttpStatus.BAD_REQUEST.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
         // ACT
-        Result<String, BackendErrorResponse> resultBackendDto = backendWebClient.registerCustomerOnBackend(LOCAL_ID);
+        Result<String, BackendErrorResponse> resultBackendDto = backendWebClient.registerCustomerOnBackend(req);
         //ASSERT
-        verify(postRequestedFor(urlEqualTo("/users")));
+        verify(postRequestedFor(urlEqualTo(USERS_ENDPOINT)));
         assertNotNull(resultBackendDto);
         assertTrue(resultBackendDto.isError());
         assertFalse(resultBackendDto.isSuccess());
@@ -103,16 +106,16 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
         // ARRANGE
         BackendRespUuid backendRespUuid = new BackendRespUuid(VALID_UUID);
         String modelErrorAsJson = objectMapper.writeValueAsString(backendRespUuid);
-        stubFor(get(urlEqualTo("/user/" + ID_AS_STRING))
+        stubFor(get(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING))
             .willReturn(aResponse()
                 .withStatus(HttpStatus.OK.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
         // ACT
         Result<BackendRespUuid, BackendErrorResponse> customerUuid =
-            backendWebClient.getCustomerUuid(Long.parseLong(ID_AS_STRING));
+            backendWebClient.getCustomerUuid(req);
         // ASSERT
-        verify(getRequestedFor(urlEqualTo("/user/" + ID_AS_STRING)));
+        verify(getRequestedFor(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)));
         assertNotNull(customerUuid);
         assertEquals(VALID_UUID, customerUuid.getData().get().uuid());
     }
@@ -122,16 +125,16 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
         // ARRANGE
         ErrorModel errorModel = new ErrorModel(TEST, TEST, TEST, TEST);
         String modelErrorAsJson = objectMapper.writeValueAsString(errorModel);
-        stubFor(get(urlEqualTo("/user/" + ID_AS_STRING))
+        stubFor(get(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING))
             .willReturn(aResponse()
                 .withStatus(HttpStatus.BAD_REQUEST.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
         // ACT
         Result<BackendRespUuid, BackendErrorResponse> customerUuid =
-            backendWebClient.getCustomerUuid(Long.parseLong(ID_AS_STRING));
+            backendWebClient.getCustomerUuid(req);
         // ASSERT
-        verify(getRequestedFor(urlEqualTo("/user/" + ID_AS_STRING)));
+        verify(getRequestedFor(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)));
         assertNotNull(customerUuid);
         assertEquals(TEST, customerUuid.getError().get().message());
     }

@@ -14,7 +14,7 @@ import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontRespDto;
 import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
-import org.vnsemkin.semkinmiddleservice.domain.services.CustomerRegistrationService;
+import org.vnsemkin.semkinmiddleservice.application.usecases.CustomerRegistrationService;
 
 @Slf4j
 @RestController("/")
@@ -36,7 +36,7 @@ public class AppController {
             .body(mapper.toDto(result.getData().get()));
     }
 
-    private ResponseEntity<String> resultFail(Result<Customer, String> result) {
+    private ResponseEntity<String> resultFail(@NonNull Result<Customer, String> result) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(result.getError().get());
     }

@@ -23,8 +23,8 @@ public class CustomerEntity {
     private String name;
     @Column(nullable = false,unique = true)
     private String email;
-    @Column(nullable = false)
-    private String password;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
     @Column(unique = true)
     private String uuid;
 }

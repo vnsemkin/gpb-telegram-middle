@@ -1,8 +1,9 @@
-package org.vnsemkin.semkinmiddleservice.domain.services;
+package org.vnsemkin.semkinmiddleservice.application.usecases;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendErrorResponse;
+import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRegistrationReq;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendRespUuid;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
 import org.vnsemkin.semkinmiddleservice.application.external.BackendClientInterface;
@@ -10,6 +11,7 @@ import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.application.repositories.CustomerRepository;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
+import org.vnsemkin.semkinmiddleservice.domain.services.PasswordService;
 import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
 
 import java.util.Optional;
@@ -20,11 +22,13 @@ public class CustomerRegistrationService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper mapper = CustomerMapper.INSTANCE;
     private final BackendClientInterface backendClientInterface;
+    private final PasswordService passwordService;
 
     public CustomerRegistrationService(CustomerRepository customerRepository,
-                                       BackendClientInterface backendClientInterface) {
+                                       BackendClientInterface backendClientInterface, PasswordService passwordService) {
         this.customerRepository = customerRepository;
         this.backendClientInterface = backendClientInterface;
+        this.passwordService = passwordService;
     }
 
     public Result<Customer, String> register(@NonNull FrontReqDto frontReqDto) {
@@ -52,7 +56,7 @@ public class CustomerRegistrationService {
 
     private Result<Customer, String> registerCustomerOnBackend(@NonNull CustomerEntity customerEntity) {
         Result<String, BackendErrorResponse> registerResult = backendClientInterface
-            .registerCustomerOnBackend(customerEntity.getId());
+            .registerCustomerOnBackend(new BackendRegistrationReq(customerEntity.getId()));
         if (registerResult.isSuccess()) {
             return getSavedOnBackendCustomerUuid(customerEntity);
         }
@@ -61,7 +65,7 @@ public class CustomerRegistrationService {
 
     private Result<Customer, String> getSavedOnBackendCustomerUuid(@NonNull CustomerEntity customerEntity) {
         Result<BackendRespUuid, BackendErrorResponse> customerWithUuid = backendClientInterface
-            .getCustomerUuid(customerEntity.getId());
+            .getCustomerUuid(new BackendRegistrationReq(customerEntity.getId()));
         if (customerWithUuid.isSuccess()) {
             customerEntity.setUuid(customerWithUuid.getData().get().uuid());
             customerRepository.save(customerEntity);
@@ -71,7 +75,8 @@ public class CustomerRegistrationService {
     }
 
     private CustomerEntity saveCustomerAndGetId(@NonNull FrontReqDto frontReqDto) {
-        return customerRepository.save(mapper.toEntity(frontReqDto));
+        String encodePassword = passwordService.hashPassword(frontReqDto.password());
+        return customerRepository.save(mapper.toEntity(frontReqDto, encodePassword));
     }
 
     private Result<Customer, String> ifRegistrationHasErrorRemoveCustomerFromDb(@NonNull Result<Customer,

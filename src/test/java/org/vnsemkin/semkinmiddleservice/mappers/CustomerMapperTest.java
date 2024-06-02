@@ -8,7 +8,9 @@ import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CustomerMapperTest {
     private final static String NAME = "John";
@@ -23,14 +25,14 @@ public class CustomerMapperTest {
     public void testToDto_FromCustomer() {
         // ARRANGE
         Customer customer = new Customer(LOCAL_ID, NAME, EMAIL, PASSWORD, UUID);
-        
+
         // ACT
         FrontRespDto dto = mapper.toDto(customer);
 
         // ASSERT
-        assertThat(dto).isNotNull();
-        assertThat(dto.name()).isEqualTo(NAME);
-        assertThat(dto.email()).isEqualTo(EMAIL);
+        assertNotNull(dto);
+        assertEquals(dto.name(), NAME);
+        assertEquals(dto.email(), EMAIL);
     }
 
     @Test
@@ -44,9 +46,9 @@ public class CustomerMapperTest {
         FrontRespDto dto = mapper.toDto(customerEntity);
 
         // ASSERT
-        assertThat(dto).isNotNull();
-        assertThat(dto.name()).isEqualTo(NAME);
-        assertThat(dto.email()).isEqualTo(EMAIL);
+        assertNotNull(dto);
+        assertEquals(dto.name(), NAME);
+        assertEquals(dto.email(), EMAIL);
     }
 
     @Test
@@ -58,11 +60,11 @@ public class CustomerMapperTest {
         CustomerEntity entity = mapper.toEntity(customer);
 
         // ASSERT
-        assertThat(entity).isNotNull();
-        assertThat(entity.getName()).isEqualTo(NAME);
-        assertThat(entity.getEmail()).isEqualTo(EMAIL);
-        assertThat(entity.getPassword()).isEqualTo(PASSWORD);
-        assertThat(entity.getUuid()).isEqualTo(UUID);
+        assertNotNull(entity);
+        assertEquals(entity.getName(), NAME);
+        assertEquals(entity.getEmail(), EMAIL);
+        assertEquals(entity.getPasswordHash(), PASSWORD);
+        assertEquals(entity.getUuid(), UUID);
     }
 
     @Test
@@ -73,12 +75,13 @@ public class CustomerMapperTest {
             PASSWORD);
 
         // ACT
-        CustomerEntity entity = mapper.toEntity(dto);
+        CustomerEntity entity = mapper.toEntity(dto, PASSWORD);
 
         // ASSERT
-        assertThat(entity).isNotNull();
-        assertThat(entity.getName()).isEqualTo(NAME);
-        assertThat(entity.getEmail()).isEqualTo(EMAIL);
+        assertEquals(entity.getName(), NAME);
+        assertEquals(entity.getEmail(), EMAIL);
+        assertEquals(entity.getPasswordHash(), PASSWORD);
+        assertNull(entity.getUuid());
     }
 
     @Test
@@ -87,15 +90,16 @@ public class CustomerMapperTest {
         CustomerEntity entity = new CustomerEntity();
         entity.setName(NAME);
         entity.setEmail(EMAIL);
-        entity.setPassword(PASSWORD);
+        entity.setPasswordHash(PASSWORD);
         entity.setUuid(UUID);
 
         // ACT
         Customer customer = mapper.toCustomer(entity);
 
         // ASSERT
-        assertThat(customer).isNotNull();
-        assertThat(customer.name()).isEqualTo(NAME);
-        assertThat(customer.email()).isEqualTo(EMAIL);
+        assertEquals(customer.name(), NAME);
+        assertEquals(customer.email(), EMAIL);
+        assertEquals(customer.passwordHash(), PASSWORD);
+        assertEquals(customer.uuid(), UUID);
     }
 }
