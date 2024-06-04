@@ -1,6 +1,7 @@
 package org.vnsemkin.semkinmiddleservice.application.dtos.front;
 
 import org.vnsemkin.semkinmiddleservice.presentation.exception.CustomerDtoValidationException;
+import static org.vnsemkin.semkinmiddleservice.application.config.AppConstants.*;
 
 public record FrontReqDto(String name, String email, String password) {
     private static final String NAME_REGEX = "^[a-zA-Zа-яА-Я]+$";
@@ -19,14 +20,14 @@ public record FrontReqDto(String name, String email, String password) {
     }
 
     private boolean isValidName(String name) {
-        return name.matches(NAME_REGEX) && name.length() <= 10;
+        return name.matches(NAME_REGEX) && name.length() <= INT_TEN ;
     }
 
     private boolean isValidEmail(String email) {
-        return email.matches(EMAIL_REGEX) && email.length() <= 50;
+        return email.matches(EMAIL_REGEX) && email.length() <= INT_FIFTY;
     }
 
     private boolean isValidPassword(String password) {
-        return password.length() >= 5 && password.length() <= 10;
+        return password.length() >= INT_FIVE && password.length() <= INT_TEN;
     }
 }

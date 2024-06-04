@@ -47,12 +47,9 @@ public class CustomerRegistrationService {
     }
 
     private Result<Customer, String> checkIfCustomerHasUuidElseRegisterOnBackend(@NonNull CustomerEntity customerEntity) {
-        if (customerEntity.getUuid() != null) {
-            return Result.error(String.format(CUSTOMER_ALREADY_REGISTER,
-                customerEntity.getEmail()));
-        } else {
-            return registerCustomerOnBackend(customerEntity);
-        }
+        return customerEntity.getUuid() != null ?
+            Result.error(String.format(CUSTOMER_ALREADY_REGISTER, customerEntity.getEmail())) :
+            registerCustomerOnBackend(customerEntity);
     }
 
     private Result<Customer, String> registerCustomerOnBackend(@NonNull CustomerEntity customerEntity) {
