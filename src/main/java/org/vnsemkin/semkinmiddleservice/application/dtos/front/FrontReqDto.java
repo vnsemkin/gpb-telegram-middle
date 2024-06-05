@@ -20,14 +20,14 @@ public record FrontReqDto(String name, String email, String password) {
     }
 
     private boolean isValidName(String name) {
-        return name.matches(NAME_REGEX) && name.length() <= INT_TEN ;
+        return name.matches(NAME_REGEX) && name.length() <= MAX_NAME_LENGTH;
     }
 
     private boolean isValidEmail(String email) {
-        return email.matches(EMAIL_REGEX) && email.length() <= INT_FIFTY;
+        return email.matches(EMAIL_REGEX) && email.length() <= MAX_EMAIL_LENGTH;
     }
 
     private boolean isValidPassword(String password) {
-        return password.length() >= INT_FIVE && password.length() <= INT_TEN;
+        return password.length() >= MIN_PASSWORD_LENGTH && password.length() <= MAX_PASSWORD_LENGTH;
     }
 }
