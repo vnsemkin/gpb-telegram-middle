@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Service
 public class CustomerRegistrationService {
-    private final static String CUSTOMER_ALREADY_REGISTER = "Пользователь c email: %s уже зарегистрирован.";
+    private final static String CUSTOMER_ALREADY_REGISTER = "Пользователь уже зарегистрирован.";
     private final static String UNKNOWN_ERROR = "Неизвестная ошибка";
     private final CustomerRepository customerRepository;
     private final CustomerMapper mapper = CustomerMapper.INSTANCE;
@@ -33,28 +33,34 @@ public class CustomerRegistrationService {
     }
 
     public Result<Customer, String> register(@NonNull FrontReqDto frontReqDto) {
-        Optional<CustomerEntity> customerEntityByEmail = customerRepository
-            .findByEmail(frontReqDto.email());
-        if (customerEntityByEmail.isPresent()) {
-            Result<Customer, String> customerResult =
-                checkIfCustomerHasUuidElseRegisterOnBackend(customerEntityByEmail.get());
-            return ifRegistrationHasErrorRemoveCustomerFromDb(customerResult, customerEntityByEmail.get());
-        } else {
-            CustomerEntity customerEntity = saveCustomerAndGetId(frontReqDto);
-            Result<Customer, String> customerResult = registerCustomerOnBackend(customerEntity);
-            return ifRegistrationHasErrorRemoveCustomerFromDb(customerResult, customerEntity);
-        }
+        Optional<CustomerEntity> customerEntity = customerRepository
+            .findByTgId(frontReqDto.tgId());
+        return customerEntity.map(this::customerExistInDb)
+            .orElseGet(() -> customerNotExistInDb(frontReqDto));
     }
 
-    private Result<Customer, String> checkIfCustomerHasUuidElseRegisterOnBackend(@NonNull CustomerEntity customerEntity) {
+    private Result<Customer, String> customerExistInDb(@NonNull CustomerEntity customerEntity) {
+        Result<Customer, String> result = ifHasUuidThenErrorElseRegisterOnBackend(customerEntity);
+        return result.isSuccess() ? result :
+        handleCustomerRegistrationError(result, customerEntity);
+    }
+
+    private Result<Customer, String> customerNotExistInDb(FrontReqDto frontReqDto) {
+        CustomerEntity customerEntity = saveCustomerInDb(frontReqDto);
+        Result<Customer, String> customerStringResult = registerCustomerOnBackend(customerEntity);
+        return handleCustomerRegistrationError(customerStringResult, customerEntity);
+
+    }
+
+    private Result<Customer, String> ifHasUuidThenErrorElseRegisterOnBackend(@NonNull CustomerEntity customerEntity) {
         return customerEntity.getUuid() != null ?
-            Result.error(String.format(CUSTOMER_ALREADY_REGISTER, customerEntity.getEmail())) :
+            Result.error(CUSTOMER_ALREADY_REGISTER) :
             registerCustomerOnBackend(customerEntity);
     }
 
     private Result<Customer, String> registerCustomerOnBackend(@NonNull CustomerEntity customerEntity) {
         Result<String, BackendErrorResponse> registerResult = backendClientInterface
-            .registerCustomerOnBackend(new BackendRegistrationReq(customerEntity.getId()));
+            .registerCustomerOnBackend(new BackendRegistrationReq(customerEntity.getTgId()));
         if (registerResult.isSuccess()) {
             return getSavedOnBackendCustomerUuid(customerEntity);
         }
@@ -65,7 +71,7 @@ public class CustomerRegistrationService {
 
     private Result<Customer, String> getSavedOnBackendCustomerUuid(@NonNull CustomerEntity customerEntity) {
         Result<BackendRespUuid, BackendErrorResponse> customerWithUuid = backendClientInterface
-            .getCustomerUuid(new BackendRegistrationReq(customerEntity.getId()));
+            .getCustomerUuid(new BackendRegistrationReq(customerEntity.getTgId()));
         if (customerWithUuid.isSuccess()) {
             return customerWithUuid.getData()
                 .map(data -> {
@@ -80,17 +86,16 @@ public class CustomerRegistrationService {
             .orElse(Result.error(UNKNOWN_ERROR));
     }
 
-    private CustomerEntity saveCustomerAndGetId(@NonNull FrontReqDto frontReqDto) {
+    private CustomerEntity saveCustomerInDb(@NonNull FrontReqDto frontReqDto) {
         String encodePassword = passwordService.hashPassword(frontReqDto.password());
         return customerRepository.save(mapper.toEntity(frontReqDto, encodePassword));
     }
 
-    private Result<Customer, String> ifRegistrationHasErrorRemoveCustomerFromDb(@NonNull Result<Customer,
+    private Result<Customer, String> handleCustomerRegistrationError(@NonNull Result<Customer,
         String> customerResult, CustomerEntity customerEntity) {
-        if (customerResult.isError()) {
-            customerRepository.delete(customerEntity);
-            return customerResult;
-        }
+        customerResult.getError()
+            .filter(error -> !error.equals(CUSTOMER_ALREADY_REGISTER))
+            .ifPresent(error -> customerRepository.delete(customerEntity));
         return customerResult;
     }
 }

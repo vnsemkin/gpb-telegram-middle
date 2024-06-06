@@ -26,15 +26,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class CustomerRegistrationServiceTest {
+    private final static long TG_USER_ID = 137264783L;
+    private final static String TG_USERNAME = "Test";
+    private final static String FIRST_NAME = "John";
     private final static String TEST = "Test";
     private final static String USER_CREATED = "User created.";
-    private final static String NAME = "John";
     private final static long LOCAL_ID = 123456789L;
     private final static String EMAIL = "john@example.com";
     private final static String PASSWORD = "password";
     private final static String PASSWORD_HASH = "password_hash";
     private final static String UUID = "123e4567-e89b-12d3-a456-426614174000";
-    private final static String CUSTOMER_ALREADY_REGISTER = "Пользователь c email: %s уже зарегистрирован.";
+    private final static String CUSTOMER_ALREADY_REGISTER = "Пользователь уже зарегистрирован.";
     CustomerMapper mapper = CustomerMapper.INSTANCE;
     BackendRegistrationReq req = new BackendRegistrationReq(LOCAL_ID);
 
@@ -55,14 +57,12 @@ public class CustomerRegistrationServiceTest {
     @Test
     public void whenCustomerAlreadyExistsInDbWithUuid_ThrowException() {
         // ARRANGE
-        FrontReqDto frontReqDto = new FrontReqDto(NAME,
-            EMAIL,
-            PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
         CustomerEntity entity = mapper.toEntity(frontReqDto, PASSWORD);
         entity.setId(LOCAL_ID);
         entity.setUuid(UUID);
 
-        when(customerRepository.findByEmail(frontReqDto.email())).thenReturn(Optional.of(entity));
+        when(customerRepository.findByTgId(frontReqDto.tgId())).thenReturn(Optional.of(entity));
 
         // ACT
         Result<Customer, String> result = customerRegistrationService.register(frontReqDto);
@@ -70,18 +70,18 @@ public class CustomerRegistrationServiceTest {
         // ASSERT
         assertTrue(result.isError());
         assertTrue(result.getError().isPresent());
-        assertEquals(String.format(CUSTOMER_ALREADY_REGISTER, EMAIL), result.getError().get());
+        assertEquals(CUSTOMER_ALREADY_REGISTER, result.getError().get());
     }
 
     @Test
     public void whenCustomerDoesNotExist_RegistrationSuccessful() {
         // ARRANGE
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
         CustomerEntity entity = mapper.toEntity(frontReqDto, PASSWORD);
-        entity.setId(LOCAL_ID);
+        entity.setTgId(LOCAL_ID);
         BackendRespUuid backendRespUuid = new BackendRespUuid(UUID);
 
-        when(customerRepository.findByEmail(frontReqDto.email())).thenReturn(Optional.empty());
+        when(customerRepository.findByTgId(frontReqDto.tgId())).thenReturn(Optional.empty());
         when(customerRepository.save(any(CustomerEntity.class))).thenReturn(entity);
         when(backendClientInterface.registerCustomerOnBackend(req)).thenAnswer(ans ->
             Result.success(USER_CREATED));
@@ -94,7 +94,7 @@ public class CustomerRegistrationServiceTest {
 
         // ASSERT
         assertTrue(resultWithUuid.isSuccess());
-        assertEquals(NAME, resultWithUuid.getData().get().name());
+        assertEquals(FIRST_NAME, resultWithUuid.getData().get().firstName());
         assertEquals(EMAIL, resultWithUuid.getData().get().email());
         assertEquals(PASSWORD, resultWithUuid.getData().get().passwordHash());
         assertEquals(UUID, resultWithUuid.getData().get().uuid());
@@ -103,13 +103,13 @@ public class CustomerRegistrationServiceTest {
     @Test
     public void whenBackendReturnError_RegistrationFail() {
         // ARRANGE
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
         CustomerEntity entity = mapper.toEntity(frontReqDto, PASSWORD);
-        entity.setId(LOCAL_ID);
+        entity.setTgId(LOCAL_ID);
         BackendErrorResponse backendErrorResponse = new BackendErrorResponse(TEST, TEST, TEST, TEST);
 
 
-        when(customerRepository.findByEmail(frontReqDto.email())).thenReturn(Optional.of(entity));
+        when(customerRepository.findByTgId(frontReqDto.tgId())).thenReturn(Optional.of(entity));
         when(customerRepository.save(any(CustomerEntity.class))).thenReturn(entity);
         when(backendClientInterface.registerCustomerOnBackend(req))
             .thenAnswer(ans -> Result.error(backendErrorResponse));
@@ -124,12 +124,12 @@ public class CustomerRegistrationServiceTest {
     @Test
     public void whenCustomerExist_ReturnUuid() {
         // ARRANGE
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
         CustomerEntity entity = mapper.toEntity(frontReqDto, PASSWORD);
-        entity.setId(LOCAL_ID);
+        entity.setTgId(LOCAL_ID);
         BackendRespUuid backendRespUuid = new BackendRespUuid(UUID);
 
-        when(customerRepository.findByEmail(frontReqDto.email())).thenReturn(Optional.of(entity));
+        when(customerRepository.findByTgId(frontReqDto.tgId())).thenReturn(Optional.of(entity));
         when(customerRepository.save(any(CustomerEntity.class))).thenReturn(entity);
         when(backendClientInterface.registerCustomerOnBackend(req))
             .thenAnswer(ans -> Result.success(USER_CREATED));
@@ -147,12 +147,12 @@ public class CustomerRegistrationServiceTest {
     @Test
     public void whenBackendReturnErrorOnUuidRequest() {
         // ARRANGE
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
         CustomerEntity entity = mapper.toEntity(frontReqDto, PASSWORD);
-        entity.setId(LOCAL_ID);
+        entity.setTgId(LOCAL_ID);
         BackendErrorResponse backendErrorResponse = new BackendErrorResponse(TEST, TEST, TEST, TEST);
 
-        when(customerRepository.findByEmail(frontReqDto.email())).thenReturn(Optional.of(entity));
+        when(customerRepository.findByTgId(frontReqDto.tgId())).thenReturn(Optional.of(entity));
         when(customerRepository.save(any(CustomerEntity.class))).thenReturn(entity);
         when(backendClientInterface.registerCustomerOnBackend(req))
             .thenAnswer(ans -> Result.success(USER_CREATED));

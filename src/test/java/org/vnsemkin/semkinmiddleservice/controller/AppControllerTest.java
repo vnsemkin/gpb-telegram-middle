@@ -27,7 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AppControllerTest {
     private final static String REG_FAULT = "Registration failed";
     private final static String REG_URL = "/registration";
-    private final static String NAME = "John";
+    private final static long TG_USER_ID = 137264783L;
+    private final static String TG_USERNAME = "Test";
+    private final static String FIRST_NAME = "John";
     private final static long LOCAL_ID = 123456789L;
     private final static String EMAIL = "john@example.com";
     private final static String PASSWORD = "password";
@@ -47,9 +49,9 @@ public class AppControllerTest {
 
     @Test
     void whenRegistrationIsSuccessful_thenReturns201() throws Exception {
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
-        Customer customer = new Customer(LOCAL_ID, NAME, EMAIL, PASSWORD, UUID);
-        FrontRespDto frontRespDto = new FrontRespDto(NAME, EMAIL);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD);
+        Customer customer = new Customer(LOCAL_ID, TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD, UUID);
+        FrontRespDto frontRespDto = new FrontRespDto(FIRST_NAME, EMAIL);
 
         when(customerRegistrationService.register(any(FrontReqDto.class)))
             .thenReturn(Result.success(customer));
@@ -64,7 +66,7 @@ public class AppControllerTest {
 
     @Test
     void whenRegistrationFails_thenReturns400() throws Exception {
-        FrontReqDto frontReqDto = new FrontReqDto(NAME, EMAIL, PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD);
 
         when(customerRegistrationService.register(any(FrontReqDto.class)))
             .thenReturn(Result.error(REG_FAULT));

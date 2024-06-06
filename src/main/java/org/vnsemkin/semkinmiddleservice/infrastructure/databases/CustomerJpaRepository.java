@@ -6,6 +6,5 @@ import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
 import java.util.Optional;
 
 public interface CustomerJpaRepository extends JpaRepository<CustomerEntity, Long> {
-    Optional<CustomerEntity> findByEmail(String email);
+    Optional<CustomerEntity> findByTgId(long tgId);
 }
-

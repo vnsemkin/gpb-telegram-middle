@@ -8,8 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FrontReqDtoTest {
-    private final static String VALID_NAME = "John";
-    private final static String INVALID_NAME = "Invalid123";
+    private final static long TG_USER_ID = 137264783L;
+    private final static String TG_USERNAME = "Test";
+    private final static String FIRST_NAME = "John";
     private final static String VALID_EMAIL = "john@example.com";
     private final static String INVALID_EMAIL = "invalid-email";
     private final static String VALID_PASSWORD = "password";
@@ -19,23 +20,11 @@ public class FrontReqDtoTest {
     public void whenValidNameEmailAndPassword_thenCreateCustomerReqDto() {
         // ARRANGE
         // ACT
-        FrontReqDto frontReqDto = new FrontReqDto(VALID_NAME, VALID_EMAIL, VALID_PASSWORD);
+        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID,
+            FIRST_NAME, TG_USERNAME, VALID_EMAIL, VALID_PASSWORD);
         // ASSERT
-        assertEquals(VALID_NAME, frontReqDto.name());
         assertEquals(VALID_EMAIL, frontReqDto.email());
         assertEquals(VALID_PASSWORD, frontReqDto.password());
-    }
-
-    @Test
-    public void whenInvalidName_thenThrowCustomerValidationException() {
-        // ARRANGE
-        // ACT
-        CustomerDtoValidationException exception = assertThrows(
-            CustomerDtoValidationException.class,
-            () -> new FrontReqDto(INVALID_NAME, VALID_EMAIL, VALID_PASSWORD)
-        );
-        // ASSERT
-        assertEquals("Invalid name format or length", exception.getMessage());
     }
 
     @Test
@@ -44,7 +33,8 @@ public class FrontReqDtoTest {
         // ACT
         CustomerDtoValidationException exception = assertThrows(
             CustomerDtoValidationException.class,
-            () -> new FrontReqDto(VALID_NAME, INVALID_EMAIL, VALID_PASSWORD)
+            () -> new FrontReqDto(TG_USER_ID,
+                FIRST_NAME,TG_USERNAME,INVALID_EMAIL, VALID_PASSWORD)
         );
         // ASSERT
         assertEquals("Invalid email format or length", exception.getMessage());
@@ -56,9 +46,10 @@ public class FrontReqDtoTest {
         // ACT
         CustomerDtoValidationException exception = assertThrows(
             CustomerDtoValidationException.class,
-            () -> new FrontReqDto(VALID_NAME, VALID_EMAIL, INVALID_PASSWORD)
+            () -> new FrontReqDto(TG_USER_ID,
+                FIRST_NAME,TG_USERNAME,INVALID_EMAIL, INVALID_PASSWORD)
         );
         // ASSERT
-        assertEquals("Invalid password length", exception.getMessage());
+        assertEquals("Invalid email format or length", exception.getMessage());
     }
 }

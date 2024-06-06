@@ -25,7 +25,6 @@ public class AppController {
     public final CustomerRegistrationService customerRegistrationService;
     private final CustomerMapper mapper = CustomerMapper.INSTANCE;
 
-
     @PostMapping("registration")
     public ResponseEntity<?> registration(
         @Validated
@@ -45,6 +44,5 @@ public class AppController {
         return result.getError()
             .map(error -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error))
             .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UNKNOWN_ERROR));
-
     }
 }

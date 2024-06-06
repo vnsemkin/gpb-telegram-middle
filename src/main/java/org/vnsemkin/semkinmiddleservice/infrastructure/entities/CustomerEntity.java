@@ -19,8 +19,12 @@ public class CustomerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(name = "tg_id", nullable = false, unique = true)
+    private long tgId;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
     @Column(nullable = false)
-    private String name;
+    private String username;
     @Column(nullable = false,unique = true)
     private String email;
     @Column(name = "password_hash", nullable = false)
