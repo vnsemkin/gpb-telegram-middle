@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'jacoco'
 }
 
 group = 'org.vnsemkin'
@@ -17,14 +18,29 @@ configurations {
     }
 }
 
+jacocoTestReport {
+    dependsOn test
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.5'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux:3.2.5'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.3'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '3.2.5'
+    implementation group: 'org.flywaydb', name: 'flyway-core', version: '10.13.0'
+    implementation group: 'org.wiremock', name: 'wiremock-jetty12', version: '3.6.0'
+    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '6.3.0'
+    runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: '10.13.0'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    testImplementation group: 'com.h2database', name: 'h2', version: '2.2.224'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
