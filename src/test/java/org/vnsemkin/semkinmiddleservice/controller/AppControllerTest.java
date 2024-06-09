@@ -9,13 +9,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontReqDto;
-import org.vnsemkin.semkinmiddleservice.application.dtos.front.FrontRespDto;
-import org.vnsemkin.semkinmiddleservice.application.mappers.CustomerMapper;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationRequest;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationResponse;
+import org.vnsemkin.semkinmiddleservice.application.mappers.AppMapper;
+import org.vnsemkin.semkinmiddleservice.application.usecases.CustomerRegistrationService;
+import org.vnsemkin.semkinmiddleservice.domain.models.Account;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
-import org.vnsemkin.semkinmiddleservice.application.usecases.CustomerRegistrationService;
+import org.vnsemkin.semkinmiddleservice.domain.services.AccountService;
 import org.vnsemkin.semkinmiddleservice.presentation.controllers.AppController;
+
+import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -26,7 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AppController.class)
 public class AppControllerTest {
     private final static String REG_FAULT = "Registration failed";
-    private final static String REG_URL = "/registration";
+    private final static String REG_URL = "/customers";
+    private final static long ACCOUNT_ID = 1232232L;
+    private final static String ACCOUNT_NAME = "Test";
+    private final static BigDecimal BALANCE = new BigDecimal("123.456");
     private final static long TG_USER_ID = 137264783L;
     private final static String TG_USERNAME = "Test";
     private final static String FIRST_NAME = "John";
@@ -42,38 +49,46 @@ public class AppControllerTest {
     private CustomerRegistrationService customerRegistrationService;
 
     @MockBean
-    private CustomerMapper mapper;
+    private AppMapper mapper;
+
+    @MockBean
+    private AccountService accountService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    void whenRegistrationIsSuccessful_thenReturns201() throws Exception {
-        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD);
-        Customer customer = new Customer(LOCAL_ID, TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD, UUID);
-        FrontRespDto frontRespDto = new FrontRespDto(FIRST_NAME, EMAIL);
+    void whenCustomerRegistrationIsSuccessful_thenReturns201() throws Exception {
+        CustomerRegistrationRequest customerRegistrationRequest =
+            new CustomerRegistrationRequest(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
+        Account account = new Account(ACCOUNT_ID, UUID, ACCOUNT_NAME, BALANCE);
+        Customer customer =
+            new Customer(LOCAL_ID, TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD, UUID, account);
+        CustomerRegistrationResponse customerRegistrationResponse =
+            new CustomerRegistrationResponse(FIRST_NAME, EMAIL);
 
-        when(customerRegistrationService.register(any(FrontReqDto.class)))
+        when(customerRegistrationService.register(any(CustomerRegistrationRequest.class)))
             .thenReturn(Result.success(customer));
-        when(mapper.toDto(any(Customer.class)))
-            .thenReturn(frontRespDto);
+        when(mapper.toCustomerRegistrationResponse(any(Customer.class)))
+            .thenReturn(customerRegistrationResponse);
 
         mockMvc.perform(post(REG_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(frontReqDto)))
+                .content(objectMapper.writeValueAsString(customerRegistrationRequest)))
             .andExpect(status().isCreated());
     }
 
     @Test
-    void whenRegistrationFails_thenReturns400() throws Exception {
-        FrontReqDto frontReqDto = new FrontReqDto(TG_USER_ID,FIRST_NAME,TG_USERNAME, EMAIL, PASSWORD);
+    void whenCustomerRegistrationFails_thenReturns400() throws Exception {
+        CustomerRegistrationRequest customerRegistrationRequest =
+            new CustomerRegistrationRequest(TG_USER_ID, FIRST_NAME, TG_USERNAME, EMAIL, PASSWORD);
 
-        when(customerRegistrationService.register(any(FrontReqDto.class)))
+        when(customerRegistrationService.register(any(CustomerRegistrationRequest.class)))
             .thenReturn(Result.error(REG_FAULT));
 
         mockMvc.perform(post(REG_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(frontReqDto)))
+                .content(objectMapper.writeValueAsString(customerRegistrationRequest)))
             .andExpect(status().isBadRequest());
     }
 }
