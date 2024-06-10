@@ -1,12 +1,9 @@
 package org.vnsemkin.semkinmiddleservice;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-public class SemkinMiddleServiceApplicationTests {
-    @Test
-    void contextLoads() {
-    }
+@ActiveProfiles("test")
+public abstract class SemkinMiddleServiceApplicationTests {
 }

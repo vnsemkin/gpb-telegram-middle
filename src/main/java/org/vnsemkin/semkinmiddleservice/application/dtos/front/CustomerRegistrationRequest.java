@@ -4,10 +4,10 @@ import org.vnsemkin.semkinmiddleservice.presentation.exception.CustomerDtoValida
 
 import static org.vnsemkin.semkinmiddleservice.application.config.AppConstants.*;
 
-public record FrontReqDto(long tgId, String firstName, String username, String email, String password) {
+public record CustomerRegistrationRequest(long tgId, String firstName, String username, String email, String password) {
     private static final String EMAIL_REGEX = "[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+";
 
-    public FrontReqDto {
+    public CustomerRegistrationRequest {
         if (!isValidEmail(email)) {
             throw new CustomerDtoValidationException("Invalid email format or length");
         }

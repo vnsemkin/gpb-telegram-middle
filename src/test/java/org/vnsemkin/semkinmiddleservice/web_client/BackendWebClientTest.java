@@ -19,9 +19,9 @@ import org.vnsemkin.semkinmiddleservice.models.ErrorModel;
 import org.vnsemkin.semkinmiddleservice.presentation.web_client.BackendClientInterfaceImp;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
     private final static String VALID_UUID = "5f59e024-03c7-498d-9fc9-b8b15fd49c47";
     private final static String USER_CREATED = "User created.";
@@ -39,6 +38,7 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
     private final static String DELIMITER = "/";
     private final static String ID_AS_STRING = "123";
     private final static String USERS_ENDPOINT = "/users";
+
     BackendRegistrationReq req = new BackendRegistrationReq(Long.parseLong(ID_AS_STRING));
     @Autowired
     BackendClientInterfaceImp backendWebClient;
@@ -51,8 +51,6 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
     public static void setup() {
         wireMockServer = new WireMockServer();
         wireMockServer.start();
-        System.setProperty("backend.base-url",
-            "http://localhost:" + wireMockServer.port());
     }
 
     @AfterAll
@@ -62,14 +60,13 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
 
     @Test
     public void whenRegisterCustomerOnBackend_Success() {
-        // ARRANGE
-        stubFor(post(urlEqualTo("/users"))
+        stubFor(post(USERS_ENDPOINT)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.NO_CONTENT.value())));
-        // ACT
+
         Result<String, BackendErrorResponse> resultBackendDto = backendWebClient
-            .registerCustomerOnBackend(req);
-        //ASSERT
+            .registerCustomer(req);
+
         verify(postRequestedFor(urlEqualTo(USERS_ENDPOINT)));
         assertNotNull(resultBackendDto);
         assertTrue(resultBackendDto.isSuccess());
@@ -79,7 +76,6 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
 
     @Test
     public void whenRegisterCustomerOnBackend_Error() throws JsonProcessingException {
-        // ARRANGE
         ErrorModel errorModel = new ErrorModel(TEST, TEST, TEST, TEST);
         String modelErrorAsJson = objectMapper.writeValueAsString(errorModel);
         stubFor(post(urlEqualTo(USERS_ENDPOINT))
@@ -87,9 +83,9 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
                 .withStatus(HttpStatus.BAD_REQUEST.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
-        // ACT
-        Result<String, BackendErrorResponse> resultBackendDto = backendWebClient.registerCustomerOnBackend(req);
-        //ASSERT
+
+        Result<String, BackendErrorResponse> resultBackendDto = backendWebClient.registerCustomer(req);
+
         verify(postRequestedFor(urlEqualTo(USERS_ENDPOINT)));
         assertNotNull(resultBackendDto);
         assertTrue(resultBackendDto.isError());
@@ -103,18 +99,17 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
 
     @Test
     public void whenRequestCustomerUuidWithValidUser_Success() throws JsonProcessingException {
-        // ARRANGE
         BackendRespUuid backendRespUuid = new BackendRespUuid(VALID_UUID);
         String modelErrorAsJson = objectMapper.writeValueAsString(backendRespUuid);
-        stubFor(get(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING))
+        stubFor(get(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.OK.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
-        // ACT
+
         Result<BackendRespUuid, BackendErrorResponse> customerUuid =
             backendWebClient.getCustomerUuid(req);
-        // ASSERT
+
         verify(getRequestedFor(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)));
         assertNotNull(customerUuid);
         assertEquals(VALID_UUID, customerUuid.getData().get().uuid());
@@ -122,18 +117,17 @@ public class BackendWebClientTest extends SemkinMiddleServiceApplicationTests {
 
     @Test
     public void whenRequestCustomerUuidWithInvalidUser_Error() throws JsonProcessingException {
-        // ARRANGE
         ErrorModel errorModel = new ErrorModel(TEST, TEST, TEST, TEST);
         String modelErrorAsJson = objectMapper.writeValueAsString(errorModel);
-        stubFor(get(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING))
+        stubFor(get(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.BAD_REQUEST.value())
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody(modelErrorAsJson)));
-        // ACT
+
         Result<BackendRespUuid, BackendErrorResponse> customerUuid =
             backendWebClient.getCustomerUuid(req);
-        // ASSERT
+
         verify(getRequestedFor(urlEqualTo(USERS_ENDPOINT + DELIMITER + ID_AS_STRING)));
         assertNotNull(customerUuid);
         assertEquals(TEST, customerUuid.getError().get().message());
