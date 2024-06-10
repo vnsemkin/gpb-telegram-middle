@@ -11,16 +11,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.View;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.AccountRegistrationResponse;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerInfoResponse;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationRequest;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationResponse;
 import org.vnsemkin.semkinmiddleservice.application.mappers.AppMapper;
+import org.vnsemkin.semkinmiddleservice.domain.services.AccountService;
 import org.vnsemkin.semkinmiddleservice.application.usecases.CustomerRegistrationService;
 import org.vnsemkin.semkinmiddleservice.domain.models.Account;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
-import org.vnsemkin.semkinmiddleservice.domain.services.AccountService;
 import org.vnsemkin.semkinmiddleservice.domain.services.CustomerService;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ import java.math.BigDecimal;
 @RestController("/")
 @RequiredArgsConstructor
 public final class AppController {
+    private final static long NEGATIVE_LONG = -1L;
     private final static String UNKNOWN_ERROR = "Неизвестная ошибка";
     private final static String WELCOME_MESSAGE = "Спасибо, что пользуетесь нашим банком";
     private final static String REGISTRATION_BONUS = "Вам начислили 5000 руб за регистрацию в подарок";
@@ -36,7 +38,8 @@ public final class AppController {
     private final AccountService accountService;
     private final CustomerRegistrationService customerRegistrationService;
     private final AppMapper mapper = AppMapper.INSTANCE;
-    private final CustomerService  customerService;
+    private final CustomerService customerService;
+    private final View error;
 
 
     @PostMapping("customers")
@@ -102,5 +105,25 @@ public final class AppController {
         return result.getError()
             .map(error -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error))
             .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UNKNOWN_ERROR));
+    }
+
+    @GetMapping("customers/{id}/accounts")
+    public ResponseEntity<?> getCustomerAccount(@PathVariable long id) {
+        Result<Account, String> accountRegistration = accountService.getAccount(id);
+        return accountRegistration.isSuccess() ? getCustomerAccountInfo(accountRegistration) :
+            getCustomerAccountError(accountRegistration);
+    }
+
+    private ResponseEntity<Account> getCustomerAccountInfo(Result<Account, String> accountRegistration) {
+        return accountRegistration.getData()
+            .map(account -> ResponseEntity.ok().body(account)).orElse(ResponseEntity.status(HttpStatus
+                    .INTERNAL_SERVER_ERROR)
+                .body(new Account(NEGATIVE_LONG, EMPTY_STRING, EMPTY_STRING, new BigDecimal(NEGATIVE_LONG))));
+    }
+
+    private ResponseEntity<String> getCustomerAccountError(Result<Account, String> accountRegistration) {
+        return accountRegistration.getError()
+            .map(error -> ResponseEntity.badRequest().body(error)).orElse(ResponseEntity.status(HttpStatus
+                .INTERNAL_SERVER_ERROR).body(UNKNOWN_ERROR));
     }
 }
