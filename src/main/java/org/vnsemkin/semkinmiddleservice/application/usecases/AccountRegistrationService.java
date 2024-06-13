@@ -2,6 +2,7 @@ package org.vnsemkin.semkinmiddleservice.application.usecases;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.vnsemkin.semkinmiddleservice.application.dtos.back.AccountInfoResponse;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.AccountRegistrationReq;
 import org.vnsemkin.semkinmiddleservice.application.dtos.back.BackendErrorResponse;
 import org.vnsemkin.semkinmiddleservice.application.external.BackendClientInterface;
@@ -44,7 +45,7 @@ public final class AccountRegistrationService {
     }
 
     private Result<Account, String> getAccountInfo(CustomerEntity customer) {
-        Result<Account, BackendErrorResponse> result = backendClientInterface.getAccount(customer.getTgId());
+        Result<AccountInfoResponse, BackendErrorResponse> result = backendClientInterface.getAccount(customer.getTgId());
         return result.getData()
             .map(account -> {
                 AccountEntity accountEntity = mapper.toAccountEntity(account);

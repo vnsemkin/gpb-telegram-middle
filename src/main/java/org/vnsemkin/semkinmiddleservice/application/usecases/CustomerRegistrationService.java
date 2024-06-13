@@ -17,7 +17,7 @@ import org.vnsemkin.semkinmiddleservice.infrastructure.entities.CustomerEntity;
 import java.util.Optional;
 
 @Service
-public class CustomerRegistrationService {
+public final class CustomerRegistrationService {
     private final static String CUSTOMER_ALREADY_REGISTER = "Пользователь уже зарегистрирован.";
     private final static String UNKNOWN_ERROR = "Неизвестная ошибка";
     private final CustomerRepository customerRepository;
@@ -60,7 +60,7 @@ public class CustomerRegistrationService {
 
     private Result<Customer, String> registerCustomerOnBackend(@NonNull CustomerEntity customerEntity) {
         Result<String, BackendErrorResponse> registerResult = backendClientInterface
-            .registerCustomer(new BackendRegistrationReq(customerEntity.getTgId()));
+            .registerCustomer(new BackendRegistrationReq(customerEntity.getTgId(), customerEntity.getUsername()));
         if (registerResult.isSuccess()) {
             return getSavedOnBackendCustomerUuid(customerEntity);
         }
@@ -71,7 +71,7 @@ public class CustomerRegistrationService {
 
     private Result<Customer, String> getSavedOnBackendCustomerUuid(@NonNull CustomerEntity customerEntity) {
         Result<BackendRespUuid, BackendErrorResponse> customerWithUuid = backendClientInterface
-            .getCustomerUuid(new BackendRegistrationReq(customerEntity.getTgId()));
+            .getCustomerUuid(customerEntity.getTgId());
         if (customerWithUuid.isSuccess()) {
             return customerWithUuid.getData()
                 .map(data -> {

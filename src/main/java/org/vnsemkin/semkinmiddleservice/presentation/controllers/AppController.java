@@ -10,24 +10,28 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.View;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.AccountRegistrationResponse;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerInfoResponse;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationRequest;
 import org.vnsemkin.semkinmiddleservice.application.dtos.front.CustomerRegistrationResponse;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.TransferRequest;
+import org.vnsemkin.semkinmiddleservice.application.dtos.front.TransferResponse;
 import org.vnsemkin.semkinmiddleservice.application.mappers.AppMapper;
-import org.vnsemkin.semkinmiddleservice.domain.services.AccountService;
 import org.vnsemkin.semkinmiddleservice.application.usecases.CustomerRegistrationService;
 import org.vnsemkin.semkinmiddleservice.domain.models.Account;
 import org.vnsemkin.semkinmiddleservice.domain.models.Customer;
 import org.vnsemkin.semkinmiddleservice.domain.models.Result;
+import org.vnsemkin.semkinmiddleservice.domain.services.AccountService;
 import org.vnsemkin.semkinmiddleservice.domain.services.CustomerService;
+import org.vnsemkin.semkinmiddleservice.domain.services.TransferService;
 
 import java.math.BigDecimal;
 
 @Slf4j
-@RestController("/")
+@RestController
+@RequestMapping("/")
 @RequiredArgsConstructor
 public final class AppController {
     private final static long NEGATIVE_LONG = -1L;
@@ -39,7 +43,7 @@ public final class AppController {
     private final CustomerRegistrationService customerRegistrationService;
     private final AppMapper mapper = AppMapper.INSTANCE;
     private final CustomerService customerService;
-    private final View error;
+    private final TransferService transferService;
 
 
     @PostMapping("customers")
@@ -125,5 +129,23 @@ public final class AppController {
         return accountRegistration.getError()
             .map(error -> ResponseEntity.badRequest().body(error)).orElse(ResponseEntity.status(HttpStatus
                 .INTERNAL_SERVER_ERROR).body(UNKNOWN_ERROR));
+    }
+
+    @PostMapping("transfers")
+    public ResponseEntity<?> transfers(@RequestBody TransferRequest request) {
+        Result<TransferResponse, String> transfer = transferService.transfer(request);
+        return transfer.isSuccess() ? transferSuccess(transfer) : transferFail(transfer);
+    }
+
+    private ResponseEntity<?> transferSuccess(Result<TransferResponse, String> transfer) {
+      return transfer.getData()
+          .map(result->ResponseEntity.ok().body(result))
+          .orElse(ResponseEntity.internalServerError().body(new TransferResponse(EMPTY_STRING)));
+    }
+
+    private ResponseEntity<?> transferFail(Result<TransferResponse, String> transfer) {
+        return transfer.getError()
+            .map(error->ResponseEntity.badRequest().body(error))
+            .orElse(ResponseEntity.badRequest().body(UNKNOWN_ERROR));
     }
 }

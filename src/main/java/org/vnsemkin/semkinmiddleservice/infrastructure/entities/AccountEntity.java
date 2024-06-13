@@ -17,13 +17,13 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Table(name = "account")
+@Table(name = "accounts")
 public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(unique = true)
-    private String uuid;
+    @Column(name = "account_id", unique = true)
+    private String accountId;
     @Column(name = "account_name", nullable = false)
     private String accountName;
     @Column(nullable = false)
